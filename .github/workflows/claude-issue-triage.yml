@@ -1,0 +1,45 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # crear/asignar labels y comentar
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        id: claude-triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue edit:*),Bash(gh label:*)"'
+
+          prompt: |
+            Analiza el issue #${{ github.event.issue.number }} del repositorio ${{ github.repository }}.
+
+            Pasos a seguir:
+            1. Lee el issue completo con `gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}` (título, cuerpo y comentarios existentes).
+            2. Determina las labels adecuadas para clasificarlo (por ejemplo: bug, enhancement, question, documentation, o de área/severidad si aplica).
+               - Lista las labels existentes con `gh label list --repo ${{ github.repository }}`.
+               - Crea con `gh label create` las labels que falten y sean necesarias (elige colores y descripciones razonables).
+               - Asígnalas con `gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-label "..."`.
+            3. Publica UN único comentario nuevo con `gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --body "..."` que contenga, en español, un diagnóstico general del problema:
+               - Resumen breve del problema.
+               - Componentes probablemente afectados (este proyecto es un Tetris en JS vanilla con `index.html`, `style.css` y `game.js`; usa la arquitectura descrita en CLAUDE.md para identificar qué función o parte del código está probablemente involucrada).
+               - Causa raíz probable.
+               - Enfoque sugerido de solución (sin escribir código todavía, esto es solo diagnóstico para guiar la implementación posterior).
+            4. No modifiques el cuerpo ni el título del issue. No publiques más de un comentario.
+
+            Responde siempre en español y de forma breve y directa.
