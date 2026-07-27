@@ -43,3 +43,4 @@ jobs:
             4. No modifiques el cuerpo ni el título del issue. No publiques más de un comentario.
 
             Responde siempre en español y de forma breve y directa.
+            El comentario debe estar en formato Markdown válido y bien interpretable por GitHub (usa encabezados, listas y bloques de código donde corresponda).
