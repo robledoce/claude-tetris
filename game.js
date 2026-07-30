@@ -50,6 +50,7 @@ function applyTheme(newTheme) {
   themeToggle.checked = theme === 'light';
   gridColor = getComputedStyle(document.body).getPropertyValue('--grid-color').trim();
   localStorage.setItem('theme', theme);
+  if (board && current) draw();
 }
 
 applyTheme(localStorage.getItem('theme') || 'dark');
