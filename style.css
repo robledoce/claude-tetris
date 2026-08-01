@@ -46,6 +46,21 @@ body.light-theme {
   --switch-bg-active: #3b5bdb;
 }
 
+body.skin-neon {
+  --board-bg: #05050a;
+  --grid-color: #14141f;
+}
+
+body.skin-pastel {
+  --board-bg: #fdf6f0;
+  --grid-color: #ece1f0;
+}
+
+body.skin-pixel {
+  --board-bg: #14140f;
+  --grid-color: #2a2a1e;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -97,6 +112,36 @@ body {
 .theme-switch-icon {
   font-size: 13px;
   line-height: 1;
+}
+
+/* ---- Skin switch ---- */
+.skin-switch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--board-bg);
+  border: 1px solid var(--board-border);
+  border-radius: 20px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.skin-switch .label {
+  margin: 0;
+}
+
+.skin-switch select {
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
 }
 
 .switch {
