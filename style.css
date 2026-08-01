@@ -20,6 +20,10 @@
   --restart-hover-bg: #9bbdff;
   --switch-bg: #3a3a5a;
   --switch-bg-active: #7aa2f7;
+  --highscore-highlight-bg: rgba(122, 162, 247, 0.25);
+  --highscore-highlight-border: #7aa2f7;
+  --input-bg: #1a1a25;
+  --input-border: #3a3a5a;
 }
 
 body.light-theme {
@@ -44,6 +48,10 @@ body.light-theme {
   --restart-hover-bg: #5b7ce6;
   --switch-bg: #c7c7d6;
   --switch-bg-active: #3b5bdb;
+  --highscore-highlight-bg: rgba(59, 91, 219, 0.15);
+  --highscore-highlight-border: #3b5bdb;
+  --input-bg: #ffffff;
+  --input-border: #c7c7d6;
 }
 
 *, *::before, *::after {
@@ -233,7 +241,7 @@ kbd {
   border-radius: 4px;
 }
 
-.overlay.hidden {
+.hidden {
   display: none;
 }
 
@@ -273,5 +281,111 @@ kbd {
 }
 
 #restart-btn:hover {
+  background: var(--restart-hover-bg);
+}
+
+/* ---- Highscores ---- */
+.highscores-panel {
+  width: 100%;
+}
+
+.highscores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.highscores-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--control-text);
+}
+
+.highscores-empty {
+  font-size: 11px;
+  color: var(--control-text);
+}
+
+.highscores-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.highscores-table th,
+.highscores-table td {
+  padding: 3px 4px;
+  text-align: left;
+  color: var(--fg);
+}
+
+.highscores-table th {
+  color: var(--label-color);
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.highscore-highlight {
+  background: var(--highscore-highlight-bg);
+  box-shadow: inset 2px 0 0 var(--highscore-highlight-border);
+}
+
+.reset-scores-btn {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--control-text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reset-scores-btn:hover {
+  background: var(--kbd-bg);
+  color: var(--fg);
+}
+
+#name-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#name-entry label {
+  font-size: 12px;
+  color: var(--control-text);
+}
+
+#player-name-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--fg);
+  padding: 8px 10px;
+  font-size: 14px;
+  text-align: center;
+  width: 160px;
+}
+
+#save-score-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#save-score-btn:hover {
   background: var(--restart-hover-bg);
 }
