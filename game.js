@@ -28,6 +28,48 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+const SKINS = {
+  retro: {
+    colors: COLORS,
+  },
+  neon: {
+    colors: [
+      null,
+      '#00fff2', // I
+      '#faff00', // O
+      '#ff00e6', // T
+      '#39ff5e', // S
+      '#ff2d4d', // Z
+      '#2d7bff', // J
+      '#ff9d00', // L
+    ],
+  },
+  pastel: {
+    colors: [
+      null,
+      '#a9e4ec', // I
+      '#fff0b3', // O
+      '#dcbbe8', // T
+      '#bfe8c4', // S
+      '#f5bcbc', // Z
+      '#bcd3f2', // J
+      '#f6d6ae', // L
+    ],
+  },
+  pixel: {
+    colors: [
+      null,
+      '#00b8b8', // I
+      '#c8c800', // O
+      '#a000a0', // T
+      '#00a000', // S
+      '#c80000', // Z
+      '#0000c8', // J
+      '#c86400', // L
+    ],
+  },
+};
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -40,9 +82,11 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
+const skinSelect = document.getElementById('skin-select');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let theme, gridColor;
+let skin;
 
 function applyTheme(newTheme) {
   theme = newTheme;
@@ -55,6 +99,19 @@ function applyTheme(newTheme) {
 
 applyTheme(localStorage.getItem('theme') || 'dark');
 themeToggle.addEventListener('change', () => applyTheme(themeToggle.checked ? 'light' : 'dark'));
+
+function applySkin(newSkin) {
+  skin = SKINS[newSkin] ? newSkin : 'retro';
+  document.body.classList.remove('skin-retro', 'skin-neon', 'skin-pastel', 'skin-pixel');
+  document.body.classList.add('skin-' + skin);
+  if (skinSelect) skinSelect.value = skin;
+  localStorage.setItem('tetris-skin', skin);
+  if (board) draw();
+  if (next) drawNext();
+}
+
+applySkin(localStorage.getItem('tetris-skin') || 'retro');
+if (skinSelect) skinSelect.addEventListener('change', () => applySkin(skinSelect.value));
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -170,15 +227,77 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
+function roundedRectPath(context, x, y, w, h, r) {
+  // el radio no puede superar la mitad del ancho/alto o el path del fallback
+  // manual se pliega sobre sí mismo (esquinas "bowtie")
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  context.beginPath();
+  if (typeof context.roundRect === 'function') {
+    context.roundRect(x, y, w, h, r);
+    return;
+  }
+  // fallback manual: traza el rectángulo con esquinas curvas usando quadraticCurveTo
+  context.moveTo(x + r, y);
+  context.lineTo(x + w - r, y);
+  context.quadraticCurveTo(x + w, y, x + w, y + r);
+  context.lineTo(x + w, y + h - r);
+  context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  context.lineTo(x + r, y + h);
+  context.quadraticCurveTo(x, y + h, x, y + h - r);
+  context.lineTo(x, y + r);
+  context.quadraticCurveTo(x, y, x + r, y);
+  context.closePath();
+}
+
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const palette = (SKINS[skin] || SKINS.retro).colors;
+  const color = palette[colorIndex];
+  const px = x * size, py = y * size;
+  const w = size - 2, h = size - 2;
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+
+  if (skin === 'neon') {
+    // se evita ctx.save()/ctx.restore() (clona todo el estado del contexto)
+    // en este hot path llamado ~200+ veces por frame; solo hace falta
+    // desactivar la sombra antes del highlight.
+    context.shadowBlur = size * 0.5;
+    context.shadowColor = color;
+    context.fillStyle = color;
+    context.fillRect(px + 1, py + 1, w, h);
+    context.shadowBlur = 0;
+    context.fillStyle = 'rgba(255,255,255,0.25)';
+    context.fillRect(px + 1, py + 1, w, 4);
+  } else if (skin === 'pastel') {
+    const r = Math.min(8, size / 4);
+    context.fillStyle = color;
+    roundedRectPath(context, px + 1, py + 1, w, h, r);
+    context.fill();
+    context.fillStyle = 'rgba(255,255,255,0.35)';
+    roundedRectPath(context, px + 3, py + 3, w - 4, h / 3, r / 1.5);
+    context.fill();
+  } else if (skin === 'pixel') {
+    context.fillStyle = color;
+    context.fillRect(px + 1, py + 1, w, h);
+    // borde interior grueso simulando sprite pixelado
+    context.strokeStyle = 'rgba(0,0,0,0.35)';
+    context.lineWidth = Math.max(2, size / 10);
+    context.strokeRect(px + 1 + context.lineWidth / 2, py + 1 + context.lineWidth / 2, w - context.lineWidth, h - context.lineWidth);
+    // patrón de píxeles pequeños tipo dithering
+    const dot = Math.max(2, Math.floor(size / 8));
+    context.fillStyle = 'rgba(255,255,255,0.3)';
+    for (let i = 0; i < 3; i++) context.fillRect(px + 4 + i * (dot + 2), py + 4, dot, dot);
+    context.fillStyle = 'rgba(0,0,0,0.25)';
+    for (let i = 0; i < 3; i++) context.fillRect(px + 4 + i * (dot + 2), py + h - 4 - dot, dot, dot);
+  } else {
+    // retro (default)
+    context.fillStyle = color;
+    context.fillRect(px + 1, py + 1, w, h);
+    // highlight
+    context.fillStyle = 'rgba(255,255,255,0.12)';
+    context.fillRect(px + 1, py + 1, w, 4);
+  }
+
   context.globalAlpha = 1;
 }
 
