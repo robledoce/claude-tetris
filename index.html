@@ -52,10 +52,51 @@
       </aside>
     </div>
 
+    <div id="start-screen" class="overlay">
+      <div class="overlay-box start-box">
+        <p class="overlay-heading">RÉCORDS</p>
+
+        <div class="records-stats">
+          <div class="records-stat">
+            <span class="label">MEJOR COMBO</span>
+            <span class="value" id="best-combo-value">0</span>
+          </div>
+          <div class="records-stat">
+            <span class="label">MAX LÍNEAS</span>
+            <span class="value" id="max-lines-value">0</span>
+          </div>
+        </div>
+
+        <table class="highscore-table" id="start-highscore-table">
+          <thead>
+            <tr><th>#</th><th>Nombre</th><th>Puntos</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <button id="play-btn">Jugar</button>
+        <button id="reset-records-btn" class="secondary-btn">Resetear records</button>
+      </div>
+    </div>
+
     <div id="overlay" class="overlay hidden">
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+
+        <div id="name-entry" class="hidden">
+          <p class="new-record-label">¡Nuevo récord! Ingresa tu nombre:</p>
+          <input type="text" id="name-input" maxlength="12" placeholder="Nombre" autocomplete="off" />
+          <button id="save-name-btn">Guardar</button>
+        </div>
+
+        <table class="highscore-table" id="gameover-highscore-table">
+          <thead>
+            <tr><th>#</th><th>Nombre</th><th>Puntos</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
