@@ -354,3 +354,123 @@ kbd {
   align-items: center;
   gap: 4px;
 }
+
+/* ---- Récords ---- */
+.records-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+}
+
+.records-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--control-text);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.records-list li.empty {
+  justify-content: center;
+  font-style: italic;
+}
+
+.records-list li.highlight {
+  background: var(--switch-bg-active);
+  color: var(--restart-text);
+  font-weight: 700;
+}
+
+.rec-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80px;
+}
+
+.records-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--control-text);
+}
+
+.records-stats b {
+  color: var(--value-color);
+}
+
+.reset-records-btn {
+  background: transparent;
+  color: var(--overlay-title-color);
+  border: 1px solid var(--overlay-title-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reset-records-btn:hover {
+  background: var(--overlay-title-color);
+  color: var(--restart-text);
+}
+
+.records-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 220px;
+  padding: 10px;
+  border: 1px solid var(--board-border);
+  border-radius: 6px;
+  background: var(--board-bg);
+}
+
+.new-record {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.new-record.hidden,
+.records-panel.hidden {
+  display: none;
+}
+
+.new-record-form {
+  display: flex;
+  gap: 6px;
+}
+
+#player-name {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  color: var(--fg);
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 120px;
+}
+
+#save-record-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#save-record-btn:hover {
+  background: var(--restart-hover-bg);
+}

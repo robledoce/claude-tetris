@@ -28,6 +28,9 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+const RECORDS_KEY = 'tetris-records';
+const STATS_KEY = 'tetris-stats';
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -50,8 +53,21 @@ const viewControlsBtn = document.getElementById('view-controls-btn');
 const backPauseBtn = document.getElementById('back-pause-btn');
 const startLevelSelect = document.getElementById('start-level-select');
 
+const recordsListEl = document.getElementById('records-list');
+const bestComboEl = document.getElementById('best-combo');
+const maxLinesEl = document.getElementById('max-lines');
+const resetRecordsBtn = document.getElementById('reset-records-btn');
+const overlayNewRecord = document.getElementById('overlay-new-record');
+const playerNameInput = document.getElementById('player-name');
+const saveRecordBtn = document.getElementById('save-record-btn');
+const overlayRecordsListEl = document.getElementById('overlay-records-list');
+const overlayBestComboEl = document.getElementById('overlay-best-combo');
+const overlayMaxLinesEl = document.getElementById('overlay-max-lines');
+const overlayRecordsPanel = document.querySelector('#overlay .records-panel');
+
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let theme, gridColor, startLevel;
+let combo, maxCombo, finalScore, finalLines, finalCombo;
 
 function applyTheme(newTheme) {
   theme = newTheme;
@@ -127,11 +143,15 @@ function clearLines() {
     }
   }
   if (cleared) {
+    combo++;
+    maxCombo = Math.max(maxCombo, combo);
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     updateHUD();
+  } else {
+    combo = 0;
   }
 }
 
@@ -243,6 +263,75 @@ function drawNext() {
       drawBlock(nextCtx, offX + c, offY + r, shape[r][c], NB);
 }
 
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+}
+
+function loadStats() {
+  try {
+    return JSON.parse(localStorage.getItem(STATS_KEY)) || { bestCombo: 0, maxLines: 0 };
+  } catch {
+    return { bestCombo: 0, maxLines: 0 };
+  }
+}
+
+function saveStats(stats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+function qualifiesForTop(currentScore) {
+  const records = loadRecords();
+  return records.length < 5 || currentScore > records[records.length - 1].score;
+}
+
+function addRecord(name, recordScore, recordLines, recordCombo) {
+  const records = loadRecords();
+  const entry = { name: name || 'AAA', score: recordScore, lines: recordLines, combo: recordCombo };
+  records.push(entry);
+  records.sort((a, b) => b.score - a.score);
+  const trimmed = records.slice(0, 5);
+  saveRecords(trimmed);
+  return { records: trimmed, index: trimmed.indexOf(entry) };
+}
+
+function renderRecordsList(el, records, highlightIndex) {
+  el.innerHTML = '';
+  if (!records.length) {
+    el.innerHTML = '<li class="empty">Sin récords aún</li>';
+    return;
+  }
+  records.forEach((r, i) => {
+    const li = document.createElement('li');
+    if (i === highlightIndex) li.classList.add('highlight');
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'rec-name';
+    nameSpan.textContent = r.name;
+    const scoreSpan = document.createElement('span');
+    scoreSpan.className = 'rec-score';
+    scoreSpan.textContent = r.score.toLocaleString();
+    li.append(nameSpan, scoreSpan);
+    el.appendChild(li);
+  });
+}
+
+function renderStats(comboEl, linesEl2, stats) {
+  comboEl.textContent = stats.bestCombo;
+  linesEl2.textContent = stats.maxLines;
+}
+
+function refreshRecordsUI() {
+  renderRecordsList(recordsListEl, loadRecords());
+  renderStats(bestComboEl, maxLinesEl, loadStats());
+}
+
 function endGame() {
   gameOver = true;
   current = null;
@@ -250,6 +339,29 @@ function endGame() {
   draw();
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+
+  finalScore = score;
+  finalLines = lines;
+  finalCombo = maxCombo;
+
+  const stats = loadStats();
+  stats.bestCombo = Math.max(stats.bestCombo, finalCombo);
+  stats.maxLines = Math.max(stats.maxLines, finalLines);
+  saveStats(stats);
+  renderStats(bestComboEl, maxLinesEl, stats);
+  renderStats(overlayBestComboEl, overlayMaxLinesEl, stats);
+
+  renderRecordsList(overlayRecordsListEl, loadRecords());
+  overlayRecordsPanel.classList.remove('hidden');
+
+  if (qualifiesForTop(finalScore)) {
+    overlayNewRecord.classList.remove('hidden');
+    playerNameInput.value = '';
+    playerNameInput.focus();
+  } else {
+    overlayNewRecord.classList.add('hidden');
+  }
+
   overlay.classList.remove('hidden');
 }
 
@@ -299,6 +411,8 @@ function init() {
   gameOver = false;
   dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
+  combo = 0;
+  maxCombo = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
@@ -356,4 +470,27 @@ backPauseBtn.addEventListener('click', () => {
   pauseMenuView.classList.remove('hidden');
 });
 
+resetRecordsBtn.addEventListener('click', () => {
+  if (!confirm('¿Resetear todos los récords?')) return;
+  localStorage.removeItem(RECORDS_KEY);
+  localStorage.removeItem(STATS_KEY);
+  refreshRecordsUI();
+  renderRecordsList(overlayRecordsListEl, []);
+  renderStats(overlayBestComboEl, overlayMaxLinesEl, loadStats());
+});
+
+function saveCurrentRecord() {
+  const name = playerNameInput.value.trim().slice(0, 12);
+  const { records, index } = addRecord(name, finalScore, finalLines, finalCombo);
+  renderRecordsList(overlayRecordsListEl, records, index);
+  renderRecordsList(recordsListEl, records);
+  overlayNewRecord.classList.add('hidden');
+}
+
+saveRecordBtn.addEventListener('click', saveCurrentRecord);
+playerNameInput.addEventListener('keydown', e => {
+  if (e.code === 'Enter') saveCurrentRecord();
+});
+
+refreshRecordsUI();
 init();
