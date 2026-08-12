@@ -275,3 +275,82 @@ kbd {
 #restart-btn:hover {
   background: var(--restart-hover-bg);
 }
+
+/* ---- Pause overlay ---- */
+.pause-box {
+  width: 240px;
+}
+
+.pause-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--overlay-score-color);
+  margin-bottom: 16px;
+}
+
+.pause-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pause-actions button,
+#back-pause-btn {
+  background: var(--restart-bg);
+  color: var(--restart-text);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+.pause-actions button:hover,
+#back-pause-btn:hover {
+  background: var(--restart-hover-bg);
+}
+
+.pause-level {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pause-level label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--label-color);
+  font-weight: 600;
+}
+
+#start-level-select {
+  background: var(--kbd-bg);
+  color: var(--fg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.pause-controls-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pause-controls-list li {
+  font-size: 13px;
+  color: var(--control-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
