@@ -15,6 +15,31 @@ const COLORS = [
   '#ffb74d', // L - orange
 ];
 
+const SKIN_COLORS = {
+  retro: COLORS,
+  neon: [
+    null,
+    '#00fff2', // I
+    '#faff00', // O
+    '#ff00e0', // T
+    '#00ff6a', // S
+    '#ff003c', // Z
+    '#00aaff', // J
+    '#ff8800', // L
+  ],
+  pastel: [
+    null,
+    '#a8e6f0', // I
+    '#fff3b0', // O
+    '#d9b8e8', // T
+    '#b8e8c0', // S
+    '#f0b8b8', // Z
+    '#b8d0f0', // J
+    '#f5cfa0', // L
+  ],
+  pixel: COLORS,
+};
+
 const PIECES = [
   null,
   [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
@@ -65,8 +90,10 @@ const overlayBestComboEl = document.getElementById('overlay-best-combo');
 const overlayMaxLinesEl = document.getElementById('overlay-max-lines');
 const overlayRecordsPanel = document.querySelector('#overlay .records-panel');
 
+const skinSelect = document.getElementById('skin-select');
+
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
-let theme, gridColor, startLevel;
+let theme, gridColor, startLevel, skin;
 let combo, maxCombo, finalScore, finalLines, finalCombo;
 
 function applyTheme(newTheme) {
@@ -78,8 +105,22 @@ function applyTheme(newTheme) {
   if (board) draw();
 }
 
+function applySkin(newSkin) {
+  skin = SKIN_COLORS[newSkin] ? newSkin : 'retro';
+  document.body.classList.remove('skin-retro', 'skin-neon', 'skin-pastel', 'skin-pixel');
+  document.body.classList.add(`skin-${skin}`);
+  skinSelect.value = skin;
+  localStorage.setItem('skin', skin);
+  if (board) {
+    draw();
+    if (next) drawNext();
+  }
+}
+
 applyTheme(localStorage.getItem('theme') || 'dark');
+applySkin(localStorage.getItem('skin') || 'retro');
 themeToggle.addEventListener('change', () => applyTheme(themeToggle.checked ? 'light' : 'dark'));
+skinSelect.addEventListener('change', () => applySkin(skinSelect.value));
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -199,15 +240,73 @@ function updateHUD() {
   levelEl.textContent = level;
 }
 
+function drawRetroBlock(context, px, py, size, color) {
+  context.fillStyle = color;
+  context.fillRect(px, py, size, size);
+  context.fillStyle = 'rgba(255,255,255,0.12)';
+  context.fillRect(px, py, size, 4);
+}
+
+function drawNeonBlock(context, px, py, size, color) {
+  context.save();
+  context.shadowColor = color;
+  context.shadowBlur = size * 0.6;
+  context.fillStyle = color;
+  context.fillRect(px, py, size, size);
+  context.shadowBlur = 0;
+  context.strokeStyle = 'rgba(255,255,255,0.5)';
+  context.lineWidth = 1;
+  context.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
+  context.restore();
+}
+
+function drawPastelBlock(context, px, py, size, color) {
+  const radius = Math.min(6, size / 4);
+  context.fillStyle = color;
+  context.beginPath();
+  context.roundRect(px, py, size, size, radius);
+  context.fill();
+  context.strokeStyle = 'rgba(255,255,255,0.6)';
+  context.lineWidth = 1.5;
+  context.stroke();
+}
+
+function drawPixelBlock(context, px, py, size, color) {
+  context.fillStyle = color;
+  context.fillRect(px, py, size, size);
+  const cell = Math.max(2, Math.floor(size / 6));
+  context.fillStyle = 'rgba(0,0,0,0.15)';
+  for (let yy = 0; yy < size; yy += cell * 2) {
+    for (let xx = 0; xx < size; xx += cell * 2) {
+      context.fillRect(px + xx, py + yy, cell, cell);
+      context.fillRect(px + xx + cell, py + yy + cell, cell, cell);
+    }
+  }
+  context.strokeStyle = 'rgba(0,0,0,0.35)';
+  context.lineWidth = 1;
+  context.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
+}
+
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  const color = (SKIN_COLORS[skin] || COLORS)[colorIndex];
+  const px = x * size + 1;
+  const py = y * size + 1;
+  const bsize = size - 2;
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  switch (skin) {
+    case 'neon':
+      drawNeonBlock(context, px, py, bsize, color);
+      break;
+    case 'pastel':
+      drawPastelBlock(context, px, py, bsize, color);
+      break;
+    case 'pixel':
+      drawPixelBlock(context, px, py, bsize, color);
+      break;
+    default:
+      drawRetroBlock(context, px, py, bsize, color);
+  }
   context.globalAlpha = 1;
 }
 

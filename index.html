@@ -8,13 +8,21 @@
 </head>
 <body>
   <div class="wrapper">
-    <div class="theme-switch">
-      <span class="theme-switch-icon">🌙</span>
-      <label class="switch" title="Cambiar tema claro/oscuro">
-        <input type="checkbox" id="theme-toggle" />
-        <span class="slider"></span>
-      </label>
-      <span class="theme-switch-icon">☀️</span>
+    <div class="top-bar">
+      <div class="theme-switch">
+        <select id="skin-select" title="Cambiar skin">
+          <option value="retro">Retro</option>
+          <option value="neon">Neon</option>
+          <option value="pastel">Pastel</option>
+          <option value="pixel">Pixel Art</option>
+        </select>
+        <span class="theme-switch-icon">🌙</span>
+        <label class="switch" title="Cambiar tema claro/oscuro">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="theme-switch-icon">☀️</span>
+      </div>
     </div>
     <h1 class="game-title">TETRIS</h1>
     <div class="game-container">

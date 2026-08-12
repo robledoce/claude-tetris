@@ -68,6 +68,12 @@ body {
   position: relative;
 }
 
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .game-title {
   text-align: center;
   font-size: 32px;
@@ -80,10 +86,6 @@ body {
 
 /* ---- Theme switch ---- */
 .theme-switch {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -97,6 +99,16 @@ body {
 .theme-switch-icon {
   font-size: 13px;
   line-height: 1;
+}
+
+#skin-select {
+  background: var(--kbd-bg);
+  color: var(--kbd-text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 10px;
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: pointer;
 }
 
 .switch {
@@ -473,4 +485,17 @@ kbd {
 
 #save-record-btn:hover {
   background: var(--restart-hover-bg);
+}
+
+/* ---- Skins ---- */
+body.skin-neon #board,
+body.skin-neon #next-canvas {
+  background: #050507;
+  border-color: #1a1a2a;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 255, 240, 0.06);
+}
+
+body.skin-pastel #board,
+body.skin-pastel #next-canvas {
+  border-radius: 16px;
 }
